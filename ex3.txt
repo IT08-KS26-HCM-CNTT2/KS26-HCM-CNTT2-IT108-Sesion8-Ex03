@@ -1,0 +1,28 @@
+Phần 1: Phân tích & Sơ đồ Pipeline
+Sơ đồ luồng dữ liệu đi qua Pipeline trong PowerShell từ khâu đọc tệp, lọc từ khóa, xử lý bẫy đến khi trả về con số cuối cùng:
+Plaintext
+[ Tệp Log ] 
+    │ (Đọc tệp)
+    ▼
+ Get-Content log.txt
+    │ (Truyền Object dòng log)
+    ▼
+ Select-String "TIMEOUT"
+    │ (Lọc các dòng chứa TIMEOUT)
+    ▼
+ Where-Object { $_.Line -notmatch "NOT TIMEOUT" }
+    │ (Loại bỏ các dòng chứa NOT TIMEOUT)
+    ▼
+ ( ... ).Count
+    │ (Đếm tổng số đối tượng Object còn lại)
+    ▼
+ [ Con số tổng duy nhất (ví dụ: 42) ]
+Phần 2: Triển khai (PowerShell One-liner)
+Để giải quyết bài toán bằng đúng 1 dòng lệnh trên PowerShell, đồng thời xử lý bẫy dữ liệu (tránh đếm nhầm các dòng NOT TIMEOUT), bạn sử dụng câu lệnh sau:
+PowerShell
+(Get-Content "log.txt" | Select-String "TIMEOUT" | Where-Object { $_.Line -notmatch "NOT TIMEOUT" }).Count
+Giải thích chi tiết lệnh:
+Get-Content "log.txt": Đọc toàn bộ nội dung tệp log và truyền từng dòng dữ liệu dưới dạng đối tượng (object) vào đường ống Pipeline (|).
+Select-String "TIMEOUT": Lọc nhanh các dòng có chứa từ khóa TIMEOUT.
+Where-Object { $_.Line -notmatch "NOT TIMEOUT" }: Kiểm tra thuộc tính dòng (.Line) của đối tượng, loại bỏ các dòng có chứa cụm từ NOT TIMEOUT để sập bẫy dữ liệu.
+( ... ).Count: Đóng ngoặc toàn bộ chuỗi lệnh và gọi thuộc tính .Count của tập hợp đối tượng kết quả cuối cùng để in ra một con số tổng duy nhất màn hình.
